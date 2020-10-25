@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package envoy.extensions.filters.http.language.v3;
+
+import "validate/validate.proto";
+
+option java_package = "io.envoyproxy.envoy.extensions.filters.http.language.v3";
+option java_outer_classname = "LanguageProto";
+option java_multiple_files = true;
+
+// [#protodoc-title: Language]
+// Language :ref:`configuration overview <config_http_filters_language>`.
+// [#extension: envoy.filters.http.language]
+
+// Language filter config
+message Language {
+  // The default language.
+  string default_language = 1 [(validate.rules).string = {min_len: 2, max_len: 5}];
+
+  // List of supported languages.
+  repeated string languages = 2
+    [(validate.rules).repeated = {items {string {min_len: 2, max_len: 5}}}];
+
+  // Optional. The name of the query parameter.
+  string query_param_name = 3;
+
+  // Optional. The name of the cookie.
+  string cookie_name = 4;
+}

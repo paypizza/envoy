@@ -1,0 +1,64 @@
+package(default_visibility = ["//visibility:public"])
+
+load("@rules_foreign_cc//tools/build_defs:configure.bzl", "configure_make")
+
+licenses(["notice"])
+
+filegroup(
+    name = "all",
+    srcs = glob(["**"]),
+)
+
+exports_files(["LICENSE"])
+
+configure_make(
+    name = "icu",
+    configure_command = "source/configure",
+    configure_env_vars = {
+        "CXXFLAGS": "-fPIC",
+        "CFLAGS": "-fPIC",
+        "LIBS": "$$LDFLAGS$$",
+        "ICU_DATA_FILTER_FILE": "$EXT_BUILD_ROOT/third_party/icu_data_filter.json",
+    },
+    configure_options = [
+        "--enable-option-checking",
+        "--enable-static",
+        "--enable-tools",
+        "--disable-shared",
+        "--disable-extras",
+        "--disable-plugins",
+        "--disable-draft",
+        "--disable-tests",
+        "--disable-samples",
+        "--with-data-packaging=static",
+    ],
+    lib_source = "@icu//:all",
+    tools_deps = [
+        "@envoy_custom//third_party:icu_data_filter.json",
+    ],
+    static_libraries = [
+        "libicuuc.a",
+        "libicudata.a",
+    ],
+)
+
+cc_library(
+    name = "common",
+    deps = [
+        "icu",
+    ],
+)
+
+cc_library(
+    name = "headers",
+    deps = [
+        "icu",
+    ],
+)
+
+cc_library(
+    name = "unicode",
+    deps = [
+        "icu",
+    ],
+)

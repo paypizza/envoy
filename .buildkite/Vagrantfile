@@ -1,0 +1,54 @@
+#
+# Buildkite agent development environment
+#
+# Post installation instructions
+#
+# 1. Login to the virtual machine
+#
+# 2. Configure your agent token
+#
+#    $ sudo sed -i "s/xxx/<BUILDKITE_TOKEN>/g" /etc/buildkite-agent/buildkite-agent.cfg
+#    $ sudo systemctl restart buildkite-agent
+#
+# 3. Configure your GitHub deploy key
+#
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "centos/8"
+  config.vm.hostname = "buildkite-agent.vm.localdomain"
+  config.vm.provider "virtualbox" do |v|
+    v.name = "buildagent.vm.localdomain"
+    v.memory = 8192
+    v.cpus = 2
+    v.default_nic_type = "82543GC"
+  end
+  config.vm.network :public_network
+  config.vm.provision "shell", inline: <<-SCRIPT
+    sudo dnf update -y;
+    sudo dnf install epel-release -y;
+    sudo dnf install make cmake ninja-build \
+      clang lld llvm llvm-devel llvm-toolset \
+      libstdc++-devel libstdc++-static \
+      python3 python3-devel \
+      zlib-devel \
+      libatomic -y;
+
+    sudo ln -s /usr/bin/python3 /usr/bin/python;
+    sudo ln -s /usr/bin/pip3 /usr/bin/pip;
+
+    sudo dnf copr enable vbatts/bazel -y;
+    sudo dnf install bazel3 -y;
+
+    sudo sh -c 'echo -e "[buildkite-agent]\nname = Buildkite Pty Ltd\nbaseurl = https://yum.buildkite.com/buildkite-agent/stable/x86_64/\nenabled=1\ngpgcheck=0\npriority=1" > /etc/yum.repos.d/buildkite-agent.repo';
+    sudo dnf install buildkite-agent -y;
+    sudo systemctl enable buildkite-agent --now;
+
+    sudo su buildkite-agent;
+    ssh-keygen -t rsa -b 4096 -C "buildkite-agent" -N "";
+    printf "Host github.com\nIdentityFile ~/.ssh/id_rsa\n" > ~/.ssh/config;
+    chmod +600 ~/.ssh/config;
+    echo "GitHub deploy key";
+    cat ~/.ssh/id_rsa.pub;
+    exit;
+  SCRIPT
+end

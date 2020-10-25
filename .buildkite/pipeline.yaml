@@ -1,0 +1,24 @@
+steps:
+  - label: ":bazel: Test"
+    key: test
+    commands:
+      - sh setup_clang.sh /usr
+      - >
+        bazel test
+        --config=clang
+        --verbose_failures
+        --show_task_finish
+        --announce_rc
+        --test_output=all
+        --nocache_test_results
+        --experimental_repository_cache_hardlinks
+        //:envoy_binary_test
+        //:echo2_integration_test
+        //src/...
+        //:envoy_container_image.tar
+      - buildkite-agent artifact upload bazel-bin/envoy-2.params
+    retry:
+      automatic:
+        - exit_status: -1
+        - exit_status: 255
+    timeout_in_minutes: 180

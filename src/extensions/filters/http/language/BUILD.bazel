@@ -1,0 +1,66 @@
+load("@envoy_api//bazel:api_build_system.bzl", "api_proto_package")
+load(
+    "@envoy//bazel:envoy_build_system.bzl",
+    "envoy_cc_extension",
+    "envoy_cc_library",
+    "envoy_package",
+)
+load(
+    "@envoy//test/extensions:extensions_build_system.bzl",
+    "envoy_extension_cc_test",
+)
+
+licenses(["notice"])  # Apache 2
+
+# Language request detection filter
+# Public docs: docs/root/configuration/http_filters/language_filter.rst
+envoy_package()
+
+# TODO: Remove
+api_proto_package()
+
+envoy_cc_library(
+    name = "language_filter_lib",
+    srcs = ["filter.cc"],
+    hdrs = ["filter.h"],
+    repository = "@envoy",
+    deps = [
+        ":pkg_cc_proto",
+        "@envoy//source/common/common:empty_string",
+        "@envoy//source/common/common:minimal_logger_lib",
+        "@envoy//source/common/common:utility_lib",
+        "@envoy//source/common/http:utility_lib",
+        "@icu//:common",
+        "@icu//:headers",
+        "@icu//:unicode",
+    ],
+)
+
+envoy_cc_extension(
+    name = "config",
+    srcs = ["config.cc"],
+    hdrs = ["config.h"],
+    repository = "@envoy",
+    security_posture = "robust_to_untrusted_downstream",
+    status = "alpha",
+    deps = [
+        ":language_filter_lib",
+        "@envoy//include/envoy/registry",
+        "@envoy//include/envoy/server:filter_config_interface",
+        "@envoy//source/extensions/filters/http:well_known_names",
+        "@envoy//source/extensions/filters/http/common:factory_base_lib",
+    ],
+)
+
+envoy_extension_cc_test(
+    name = "filter_integration_test",
+    srcs = ["filter_integration_test.cc"],
+    extension_name = "envoy.filters.http.language",
+    repository = "@envoy",
+    shard_count = 2,
+    deps = [
+        ":config",
+        "@envoy//test/integration:http_integration_lib",
+        "@envoy//test/test_common:simulated_time_system_lib",
+    ],
+)

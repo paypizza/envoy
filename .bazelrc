@@ -1,0 +1,59 @@
+# Envoy specific Bazel build/test options.
+
+# Bazel doesn't need more than 200MB of memory for local build based on memory profiling:
+# https://docs.bazel.build/versions/master/skylark/performance.html#memory-profiling
+# The default JVM max heapsize is 1/4 of physical memory up to 32GB which could be large
+# enough to consume all memory constrained by cgroup in large host, which is the case in CircleCI.
+# Limiting JVM heapsize here to let it do GC more when approaching the limit to
+# leave room for compiler/linker.
+# The number 2G is choosed heuristically to both support in CircleCI and large enough for RBE.
+# Startup options cannot be selected via config.
+startup --host_jvm_args=-Xmx2g
+
+build --experimental_strict_action_env=true
+build --host_force_python=PY3
+build --action_env=BAZEL_LINKLIBS=-l%:libstdc++.a
+build --action_env=BAZEL_LINKOPTS=-lm
+build --host_javabase=@bazel_tools//tools/jdk:remote_jdk11
+build --javabase=@bazel_tools//tools/jdk:remote_jdk11
+build --enable_platform_specific_config
+
+# Enable position independent code, this option is not supported on Windows and default on on macOS.
+build:linux --copt=-fPIC
+build:linux --cxxopt=-std=c++17
+build:linux --conlyopt=-fexceptions
+build:linux --fission=dbg,opt
+build:linux --features=per_object_debug_info
+
+# We already have absl in the build, define absl=1 to tell googletest to use absl for backtrace.
+build --define absl=1
+
+# Pass PATH, CC, CXX and LLVM_CONFIG variables from the environment.
+build --action_env=CC
+build --action_env=CXX
+build --action_env=LLVM_CONFIG
+build --action_env=PATH
+
+# Skip system ICU linking.
+build --@com_googlesource_googleurl//build_config:system_icu=0
+
+# Common flags for Clang
+build:clang --action_env=BAZEL_COMPILER=clang
+build:clang --linkopt=-fuse-ld=lld
+
+# Clang with libc++
+build:libc++ --config=clang
+build:libc++ --action_env=CXXFLAGS=-stdlib=libc++
+build:libc++ --action_env=LDFLAGS=-stdlib=libc++
+build:libc++ --action_env=BAZEL_CXXOPTS=-stdlib=libc++
+build:libc++ --action_env=BAZEL_LINKLIBS=-l%:libc++.a:-l%:libc++abi.a:-lm
+build:libc++ --define force_libcpp=enabled
+
+# Optimize build for binary size reduction.
+build:sizeopt -c opt --copt -Os
+
+# Hide icu warnings
+build --cxxopt=-Wno-deprecated
+
+try-import %workspace%/clang.bazelrc
+try-import %workspace%/user.bazelrc
