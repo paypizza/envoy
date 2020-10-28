@@ -52,10 +52,10 @@ FilterStats Filter::generateStats(const std::string& prefix, Stats::Scope& scope
   return {LANGUAGE_FILTER_STATS(POOL_COUNTER_PREFIX(scope, final_prefix))};
 }
 
-Http::FilterHeadersStatus Filter::decodeHeaders(Http::RequestHeaderMap& headers, bool) {
+Http::FilterHeadersStatus Filter::decodeHeaders(Http::RequestHeaderMap& request_headers, bool) {
   if (!config_->query_param_name().empty()) {
     // Get the URL query parameter
-    Http::Utility::QueryParams params = Http::Utility::parseQueryString(headers.Path()->value().getStringView());
+    Http::Utility::QueryParams params = Http::Utility::parseQueryString(request_headers.Path()->value().getStringView());
 
     if (!params.empty()) {
       absl::optional<std::string> param_value = (params.find(config_->query_param_name()) != params.end()) ?
@@ -68,7 +68,7 @@ Http::FilterHeadersStatus Filter::decodeHeaders(Http::RequestHeaderMap& headers,
         std::string language_tag = matchValue(locale);
 
         if (!language_tag.empty()) {
-          headers.addCopy(Language, language_tag);
+          request_headers.addCopy(Language, language_tag);
           config_->stats().query_param_.inc();
 
           return Http::FilterHeadersStatus::Continue;
@@ -79,13 +79,13 @@ Http::FilterHeadersStatus Filter::decodeHeaders(Http::RequestHeaderMap& headers,
 
   if (!config_->cookie_name().empty()) {
     // Get the cookie
-    const std::string value = Http::Utility::parseCookieValue(headers, config_->cookie_name());
+    const std::string value = Http::Utility::parseCookieValue(request_headers, config_->cookie_name());
     if (!value.empty()) {
       icu::Locale locale = icu::Locale(value.data());
       std::string language_tag = matchValue(locale);
 
       if (!language_tag.empty()) {
-        headers.addCopy(Language, language_tag);
+        request_headers.addCopy(Language, language_tag);
         config_->stats().cookie_.inc();
 
         return Http::FilterHeadersStatus::Continue;
@@ -94,9 +94,9 @@ Http::FilterHeadersStatus Filter::decodeHeaders(Http::RequestHeaderMap& headers,
   }
 
   // Get the accept language header
-  const Http::HeaderEntry* entry = headers.get(AcceptLanguage);
-  if (entry != nullptr) {
-    absl::string_view value_str = entry->value().getStringView();
+  const auto header = request_headers.get(AcceptLanguage);
+  if (!header.empty()) {
+    absl::string_view value_str = header[0]->value().getStringView();
 
     if (!value_str.empty()) {
       std::string value = std::string(value_str);
@@ -109,7 +109,7 @@ Http::FilterHeadersStatus Filter::decodeHeaders(Http::RequestHeaderMap& headers,
 
         if (U_SUCCESS(errorCode)) {
           if (!language_tag.empty()) {
-            headers.addCopy(Language, language_tag);
+            request_headers.addCopy(Language, language_tag);
             config_->stats().header_.inc();
 
             return Http::FilterHeadersStatus::Continue;
@@ -120,7 +120,7 @@ Http::FilterHeadersStatus Filter::decodeHeaders(Http::RequestHeaderMap& headers,
   }
 
   // Default language fallback
-  headers.addCopy(Language, config_->default_language().getLanguage());
+  request_headers.addCopy(Language, config_->default_language().getLanguage());
   config_->stats().default_language_.inc();
 
   return Http::FilterHeadersStatus::Continue;

@@ -10,20 +10,10 @@ local_repository(
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
-    name = "icu",
-    build_file = "//third_party:icu.bazel",
-    patches = ["//third_party:icu.icu4c-67_1.patch"],
-    sha256 = "8987b530d7954e9a1b8c041dcb8959221d8a794710302a26e800174d2d511ad2",
-    strip_prefix = "icu-release-67-1/icu4c",
-    url = "https://github.com/unicode-org/icu/archive/release-67-1.tar.gz",
-)
-
-load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
-
-git_repository(
     name = "envoy",
-    commit = "ed609ff891f6b9b415aa627671976ac175e5c000",
-    remote = "https://github.com/envoyproxy/envoy.git",
+    sha256 = "cec9a84d5a5d16bccb6f1846a7c78f1a64f10b357d6660a5cfc60ec1bb6ad0da",
+    strip_prefix = "envoy-2d0a2f67eccc741f8d093c56b1ed4ea3f1382c06",
+    url = "https://github.com/envoyproxy/envoy/archive/2d0a2f67eccc741f8d093c56b1ed4ea3f1382c06.tar.gz",
 )
 
 load("@envoy//bazel:api_binding.bzl", "envoy_api_binding")
@@ -47,10 +37,19 @@ load("@envoy//bazel:dependency_imports.bzl", "envoy_dependency_imports")
 envoy_dependency_imports()
 
 http_archive(
+    name = "icu",
+    build_file = "//third_party:icu.bazel",
+    patches = ["//third_party:icu.icu4c-68-1.patch"],
+    sha256 = "5b3cfb519c20511c1c0429b093ec16960f6a6a0d7968a9065fda393f9eba48fc",
+    strip_prefix = "icu-release-68-1/icu4c",
+    url = "https://github.com/unicode-org/icu/archive/release-68-1.tar.gz",
+)
+
+http_archive(
     name = "io_bazel_rules_docker",
     sha256 = "4521794f0fba2e20f3bf15846ab5e01d5332e587e9ce81629c7f96c793bb7036",
     strip_prefix = "rules_docker-0.14.4",
-    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.14.4/rules_docker-v0.14.4.tar.gz"],
+    url = "https://github.com/bazelbuild/rules_docker/releases/download/v0.14.4/rules_docker-v0.14.4.tar.gz",
 )
 
 load("@io_bazel_rules_docker//toolchains/docker:toolchain.bzl", docker_toolchain_configure = "toolchain_configure")

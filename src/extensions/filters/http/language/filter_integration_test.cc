@@ -54,8 +54,9 @@ TEST_P(HttpFilterLanguageIntegrationTest, DefaultLanguageFallback) {
   response->waitForEndStream();
   EXPECT_TRUE(response->complete());
 
+  EXPECT_FALSE(upstream_request_->headers().get(Envoy::Http::LowerCaseString{"x-language"}).empty());
   EXPECT_EQ(HttpFilterLanguageIntegrationTest::DefaultLanguage,
-               upstream_request_->headers().get(Http::LowerCaseString("X-Language"))->value().getStringView());
+               upstream_request_->headers().get(Http::LowerCaseString{"x-language"})[0]->value().getStringView());
 
   codec_client_->close();
   ASSERT_TRUE(fake_upstream_connection_->close());
@@ -81,8 +82,9 @@ TEST_P(HttpFilterLanguageIntegrationTest, ValidQueryParameter) {
   response->waitForEndStream();
   EXPECT_TRUE(response->complete());
 
+  EXPECT_FALSE(upstream_request_->headers().get(Envoy::Http::LowerCaseString{"x-language"}).empty());
   EXPECT_EQ("fr",
-               upstream_request_->headers().get(Http::LowerCaseString("X-Language"))->value().getStringView());
+               upstream_request_->headers().get(Http::LowerCaseString{"x-language"})[0]->value().getStringView());
 
   codec_client_->close();
   ASSERT_TRUE(fake_upstream_connection_->close());
@@ -108,8 +110,9 @@ TEST_P(HttpFilterLanguageIntegrationTest, MatchQueryParameter) {
   response->waitForEndStream();
   EXPECT_TRUE(response->complete());
 
+  EXPECT_FALSE(upstream_request_->headers().get(Envoy::Http::LowerCaseString{"x-language"}).empty());
   EXPECT_EQ("fr",
-               upstream_request_->headers().get(Http::LowerCaseString("X-Language"))->value().getStringView());
+               upstream_request_->headers().get(Http::LowerCaseString{"x-language"})[0]->value().getStringView());
 
   codec_client_->close();
   ASSERT_TRUE(fake_upstream_connection_->close());
@@ -135,8 +138,9 @@ TEST_P(HttpFilterLanguageIntegrationTest, InvalidQueryParameter) {
   response->waitForEndStream();
   EXPECT_TRUE(response->complete());
 
+  EXPECT_FALSE(upstream_request_->headers().get(Envoy::Http::LowerCaseString{"x-language"}).empty());
   EXPECT_EQ(HttpFilterLanguageIntegrationTest::DefaultLanguage,
-               upstream_request_->headers().get(Http::LowerCaseString("X-Language"))->value().getStringView());
+               upstream_request_->headers().get(Http::LowerCaseString{"x-language"})[0]->value().getStringView());
 
   codec_client_->close();
   ASSERT_TRUE(fake_upstream_connection_->close());
@@ -162,8 +166,9 @@ TEST_P(HttpFilterLanguageIntegrationTest, IgnoreQueryParameter) {
   response->waitForEndStream();
   EXPECT_TRUE(response->complete());
 
+  EXPECT_FALSE(upstream_request_->headers().get(Envoy::Http::LowerCaseString{"x-language"}).empty());
   EXPECT_EQ(HttpFilterLanguageIntegrationTest::DefaultLanguage,
-               upstream_request_->headers().get(Http::LowerCaseString("X-Language"))->value().getStringView());
+               upstream_request_->headers().get(Http::LowerCaseString{"x-language"})[0]->value().getStringView());
 
   codec_client_->close();
   ASSERT_TRUE(fake_upstream_connection_->close());
@@ -190,8 +195,9 @@ TEST_P(HttpFilterLanguageIntegrationTest, ValidCookie) {
   response->waitForEndStream();
   EXPECT_TRUE(response->complete());
 
+  EXPECT_FALSE(upstream_request_->headers().get(Envoy::Http::LowerCaseString{"x-language"}).empty());
   EXPECT_EQ("es",
-               upstream_request_->headers().get(Http::LowerCaseString("X-Language"))->value().getStringView());
+               upstream_request_->headers().get(Http::LowerCaseString{"x-language"})[0]->value().getStringView());
 
   codec_client_->close();
   ASSERT_TRUE(fake_upstream_connection_->close());
@@ -218,8 +224,9 @@ TEST_P(HttpFilterLanguageIntegrationTest, InvalidCookie) {
   response->waitForEndStream();
   EXPECT_TRUE(response->complete());
 
+  EXPECT_FALSE(upstream_request_->headers().get(Envoy::Http::LowerCaseString{"x-language"}).empty());
   EXPECT_EQ(HttpFilterLanguageIntegrationTest::DefaultLanguage,
-               upstream_request_->headers().get(Http::LowerCaseString("X-Language"))->value().getStringView());
+               upstream_request_->headers().get(Http::LowerCaseString{"x-language"})[0]->value().getStringView());
 
   codec_client_->close();
   ASSERT_TRUE(fake_upstream_connection_->close());
@@ -246,8 +253,9 @@ TEST_P(HttpFilterLanguageIntegrationTest, IgnoreCookie) {
   response->waitForEndStream();
   EXPECT_TRUE(response->complete());
 
+  EXPECT_FALSE(upstream_request_->headers().get(Envoy::Http::LowerCaseString{"x-language"}).empty());
   EXPECT_EQ(HttpFilterLanguageIntegrationTest::DefaultLanguage,
-               upstream_request_->headers().get(Http::LowerCaseString("X-Language"))->value().getStringView());
+               upstream_request_->headers().get(Http::LowerCaseString{"x-language"})[0]->value().getStringView());
 
   codec_client_->close();
   ASSERT_TRUE(fake_upstream_connection_->close());
@@ -274,8 +282,9 @@ TEST_P(HttpFilterLanguageIntegrationTest, AcceptLanguageHeader) {
   response->waitForEndStream();
   EXPECT_TRUE(response->complete());
 
+  EXPECT_FALSE(upstream_request_->headers().get(Envoy::Http::LowerCaseString{"x-language"}).empty());
   EXPECT_EQ("fr-CH",
-               upstream_request_->headers().get(Http::LowerCaseString("X-Language"))->value().getStringView());
+               upstream_request_->headers().get(Http::LowerCaseString{"x-language"})[0]->value().getStringView());
 
   codec_client_->close();
   ASSERT_TRUE(fake_upstream_connection_->close());
@@ -302,8 +311,9 @@ TEST_P(HttpFilterLanguageIntegrationTest, InvalidAcceptLanguageHeader) {
   response->waitForEndStream();
   EXPECT_TRUE(response->complete());
 
+  EXPECT_FALSE(upstream_request_->headers().get(Envoy::Http::LowerCaseString{"x-language"}).empty());
   EXPECT_EQ(HttpFilterLanguageIntegrationTest::DefaultLanguage,
-               upstream_request_->headers().get(Http::LowerCaseString("X-Language"))->value().getStringView());
+               upstream_request_->headers().get(Http::LowerCaseString{"x-language"})[0]->value().getStringView());
 
   codec_client_->close();
   ASSERT_TRUE(fake_upstream_connection_->close());
