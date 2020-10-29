@@ -57,7 +57,6 @@ load("@io_bazel_rules_docker//toolchains/docker:toolchain.bzl", docker_toolchain
 # Override the default docker toolchain configuration.
 docker_toolchain_configure(
     name = "docker_config",
-    client_config = "~/.docker/config.json",
     docker_flags = [
         "--log-level=info",
     ],
